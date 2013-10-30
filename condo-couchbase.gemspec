@@ -1,7 +1,7 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
-require "condo_couchbase/version"
+require "condo-couchbase/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 4.0.0"
   s.add_dependency "condo"
   s.add_dependency "couchbase-model"
+  s.add_dependency "couchbase-id"
 end

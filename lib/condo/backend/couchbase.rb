@@ -35,7 +35,7 @@ module Condo
         # => remove_entry (upload_id)
         #
         class Couchbase < ::Couchbase::Model
-            include ::CouchHelp::IdGenerator
+            include ::CouchbaseId::Generator
 
             attribute :created_at,      default: lambda { Time.now.to_i }
             attribute :user_id, :file_name, :file_size, :file_id, 

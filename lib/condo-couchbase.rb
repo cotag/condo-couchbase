@@ -1,6 +1,6 @@
 require 'condo'
-require 'condo_couchbase/engine'
-require 'couch_help/id_generator'
+require 'couchbase-id'
+require 'condo-couchbase/engine'
 require 'condo/backend/couchbase'
 
 #::Condo::Application.backend = Condo::Backend::Couchbase
