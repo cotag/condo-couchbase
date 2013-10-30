@@ -1,0 +1,4 @@
+h1. Condo Couchbase Backend
+
+Include in your gem file: @gem 'condo-couchbase'@
+Assumes you are using "couchbase-model":https://github.com/couchbase/couchbase-ruby-model/
