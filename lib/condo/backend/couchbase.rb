@@ -1,3 +1,5 @@
+require 'digest/sha2'
+
 module Condo
     module Backend
         
@@ -35,36 +37,22 @@ module Condo
         # => remove_entry (upload_id)
         #
         class Couchbase < ::Couchbase::Model
-            include ::CouchbaseId::Generator
+            design_document :co_upld
+            before_create :generate_id
+
 
             attribute :created_at,      default: lambda { Time.now.to_i }
             attribute :user_id, :file_name, :file_size, :file_id, 
                 :provider_namespace, :provider_name, :provider_location, :bucket_name,
-                :object_key, :object_options_raw, :resumable_id, :resumable, :file_path
-
-
-
-            def object_options=(hash)
-                self.object_options_raw = hash.to_json
-            end
-
-            def object_options
-                JSON.parse(self.object_options_raw)
-            end
+                :object_key, :object_options, :resumable_id, :resumable, :file_path
             
             
             #
             # Checks for an exact match in the database given a set of parameters
             #
             def self.check_exists(params)
-                if params[:upload_id].nil?
-                    params[:upload_id] = self.bucket.get("uplding-#{params[:user_id]}-#{params[:file_id]}-#{params[:file_name]}-#{params[:file_size]}", quiet: true)
-                end
-                upload = self.find_by_id(params[:upload_id])
-                if upload.present? && upload.user_id != params[:user_id].to_s
-                    upload = nil
-                end
-                upload
+                params[:upload_id] ||= "upld-#{params[:user_id]}-#{Digest::SHA256.hexdigest("#{params[:file_id]}-#{params[:file_name]}-#{params[:file_size]}")}"
+                self.find_by_id(params[:upload_id])
             end
             
             #
@@ -73,8 +61,7 @@ module Condo
             def self.add_entry(params)
                 model = self.new(params)
                 model.object_options = params[:object_options]
-                model.save!
-                self.bucket.set("uplding-#{params[:user_id]}-#{params[:file_id]}-#{params[:file_name]}-#{params[:file_size]}", model.id)
+                model.create!
                 model
             end
             
@@ -93,7 +80,6 @@ module Condo
             #
             def remove_entry
                 self.delete
-                self.class.bucket.delete("uplding-#{self.user_id}-#{self.file_id}-#{self.file_name}-#{self.file_size}")
             end
             
             
@@ -107,7 +93,14 @@ module Condo
             def date_created
                 @date_created ||= Time.at(self.created_at)
             end
-            
+
+
+            protected
+
+
+            def generate_id
+                self.id = "upld-#{self.user_id}-#{Digest::SHA256.hexdigest("#{self.file_id}-#{self.file_name}-#{self.file_size}")}"
+            end
         end
     end
 end
