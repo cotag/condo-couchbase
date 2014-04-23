@@ -18,6 +18,5 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ">= 4.0.0"
   s.add_dependency "condo"
-  s.add_dependency "couchbase-model"
   s.add_dependency "couchbase-id"
 end
