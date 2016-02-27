@@ -44,7 +44,8 @@ module Condo
             attribute :created_at,      default: lambda { Time.now.to_i }
             attribute :user_id, :file_name, :file_size, :file_id, 
                 :provider_namespace, :provider_name, :provider_location, :bucket_name,
-                :object_key, :object_options, :resumable_id, :resumable, :file_path
+                :object_key, :object_options, :resumable_id, :resumable, :file_path,
+                :part_list, :part_data
             
             
             #
