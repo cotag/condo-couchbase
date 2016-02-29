@@ -46,53 +46,79 @@ module Condo
                 :provider_namespace, :provider_name, :provider_location, :bucket_name,
                 :object_key, :object_options, :resumable_id, :resumable, :file_path,
                 :part_list, :part_data
-            
-            
-            #
+
+
             # Checks for an exact match in the database given a set of parameters
-            #
             def self.check_exists(params)
                 params[:upload_id] ||= "upld-#{params[:user_id]}-#{Digest::SHA256.hexdigest("#{params[:file_id]}-#{params[:file_name]}-#{params[:file_size]}")}"
                 self.find_by_id(params[:upload_id])
             end
-            
-            #
+
             # Adds a new upload entry into the database
-            #
             def self.add_entry(params)
                 model = self.new(params)
                 model.object_options = params[:object_options]
                 model.create!
                 model
             end
-            
-            #
+
+            # Return a list of Uploads that were last updated before a particular time
+            view :by_user_id
+            def self.find_by_user_id(user_id)
+                self.by_user_id key: user_id, stale: false
+            end
+
+            def self.older_than(time)
+                old_upload = time.to_i
+                uploads = []
+                self.all_uploads.each do |upload|
+                    uploads << upload if upload.created_at < old_upload
+                end
+                uploads
+            end
+
+            def self.all_uploads
+                self.by_user_id(stale: false)
+            end
+
+
             # Updates self with the passed in parameters
-            #
             def update_entry(params)
                 self.update_attributes(params)
                 result = self.save
                 raise ActiveResource::ResourceInvalid if result == false
                 self
             end
-            
-            #
+
             # Deletes references to the upload
-            #
             def remove_entry
                 self.delete
             end
-            
-            
-            #
+
             # Attribute accessors to comply with the backend spec
-            #
             def upload_id
                 self.id
             end
             
             def date_created
                 @date_created ||= Time.at(self.created_at)
+            end
+
+            # Provide a clean up function that uses the condo strata to delete itself
+            # NOTE:: this won't work with completely dynamic providers so is really just here
+            #  as a helper if you have pre-defined storage providers
+            def cleanup
+                options = {}
+                options[:namespace] = self.provider_namespace if self.provider_namespace
+                options[:location] = self.provider_location if self.provider_location
+                residence = ::Condo::Configuration.get_residence(self.provider_name, options)
+
+                if residence
+                    residence.destroy(self)
+                    self.remove_entry
+                else
+                    raise NotImplementedError, 'unable to find static residence'
+                end
             end
 
 
