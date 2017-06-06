@@ -2,7 +2,7 @@ require 'digest/sha2'
 
 module Condo
     module Backend
-        
+
         #
         # The following data needs to be stored in any backend
         # => provider_namespace (for handling multiple upload controllers, defaults to global)
@@ -36,12 +36,12 @@ module Condo
         # => update_entry ({upload_id, resumable_id})
         # => remove_entry (upload_id)
         #
-        class Couchbase < ::Couchbase::Model
+        class Couchbase < ::CouchbaseOrm::Base
             design_document :co_upld
             before_create :generate_id
 
 
-            attribute :created_at,      default: lambda { Time.now.to_i }
+            attribute :created_at, default: proc { Time.now.to_i }
             attribute :user_id, :file_name, :file_size, :file_id, 
                 :provider_namespace, :provider_name, :provider_location, :bucket_name,
                 :object_key, :object_options, :resumable_id, :resumable, :file_path,
@@ -63,10 +63,7 @@ module Condo
             end
 
             # Return a list of Uploads that were last updated before a particular time
-            view :by_user_id
-            def self.find_by_user_id(user_id)
-                self.by_user_id key: user_id, stale: false
-            end
+            index_view :user_id
 
             def self.older_than(time)
                 old_upload = time.to_i
@@ -78,7 +75,7 @@ module Condo
             end
 
             def self.all_uploads
-                self.by_user_id(stale: false)
+                self.by_user_id
             end
 
 
