@@ -62,7 +62,7 @@ module Condo
                 :provider_namespace, :provider_name, :provider_location, :bucket_name,
                 :object_key, :object_options, :resumable_id, :resumable, :file_path,
                 :part_list, :part_data].each { |key| model.__send__("#{key}=", params[key]) if params[key] }
-                model.create!
+                model.save!
                 model
             end
 
