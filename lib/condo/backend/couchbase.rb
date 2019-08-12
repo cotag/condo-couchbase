@@ -49,9 +49,10 @@ module Condo
 
 
             # Checks for an exact match in the database given a set of parameters
-            def self.check_exists(params)
-                params[:upload_id] ||= "upld-#{params[:user_id]}-#{Digest::SHA256.hexdigest("#{params[:file_id]}-#{params[:file_name]}-#{params[:file_size]}")}"
-                self.find_by_id(params[:upload_id])
+           def self.check_exists(params)
+                upload_id = params.delete(:upload_id)
+                upload_id ||= "upld-#{params[:user_id]}-#{Digest::SHA256.hexdigest("#{params[:file_id]}-#{params[:file_name]}-#{params[:file_size]}")}"
+                self.find_by_id(upload_id)
             end
 
             # Adds a new upload entry into the database
