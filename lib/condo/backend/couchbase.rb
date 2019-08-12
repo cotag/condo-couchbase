@@ -57,7 +57,22 @@ module Condo
 
             # Adds a new upload entry into the database
             def self.add_entry(params)
-                model = self.new(params)
+                model = self.new
+                model.user_id = params[:user_id]
+                model.file_name = params[:file_name]
+                model.file_size = params[:file_size]
+                model.file_id = params[:file_id]
+                model.provider_namespace = params[:provider_namespace]
+                model.provider_name = params[:provider_name]
+                model.provider_location = params[:provider_location]
+                model.bucket_name = params[:bucket_name]
+                model.object_key = params[:object_key]
+                model.object_options = params[:object_options]
+                model.resumable_id = params[:resumable_id]
+                model.resumable = params[:resumable]
+                model.file_path = params[:file_path]
+                model.part_list = params[:part_list]
+                model.part_data = params[:part_data]
                 model.object_options = params[:object_options]
                 model.create!
                 model
